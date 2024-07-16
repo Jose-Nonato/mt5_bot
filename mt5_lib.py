@@ -45,3 +45,17 @@ def initialize_symbol(symbol):
     :param symbol: string of symbol.
     :return: Boolean: True = Initialized, False = not Initialized
     """
+    all_symbols = MetaTrader5.symbols_get()
+    symbols_name = []
+    for sym in all_symbols: 
+        symbols_name.append(sym.name)
+    if symbol in symbols_name:
+        try:
+            MetaTrader5.symbol_select(symbol, True)
+            return True
+        except Exception as e:
+            print(f"Error enabling {symbol}. Error: {e}")
+            return False
+    else:
+        print(f"Symbol {symbol} does not exists on this version of MT5.")
+        return False
