@@ -1,6 +1,6 @@
 import json
 import os
-import mt5_lib
+import mt5_lib, indicator_lib
 
 
 def get_project_settings(filepath):
@@ -45,3 +45,5 @@ if __name__ == "__main__":
             1000
         )
         print(candlesticks)
+    ema_50 = indicator_lib.calc_custom_ema(candlesticks, 50)
+    print(ema_50)
