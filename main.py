@@ -37,3 +37,11 @@ def start_up(project_settings):
 if __name__ == "__main__":
     project_settings = get_project_settings("project_settings.json")
     start = start_up(project_settings)
+    symbols = project_settings["mt5"]["symbols"]
+    for symbol in symbols:
+        candlesticks = mt5_lib.get_candlesticks(
+            symbol,
+            project_settings["mt5"]["timeframe"],
+            1000
+        )
+        print(candlesticks)
