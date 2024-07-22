@@ -20,3 +20,23 @@ def calc_custom_ema(dataframe, ema_size):
         else:
             dataframe.loc[i, ema_name] = 0.0
     return dataframe
+
+
+def ema_cross_calculator(dataframe, ema_one, ema_two):
+    """
+    Function to calculate on EMA cross event.
+    :param dataframe: dataframe object
+    :param ema_one: integer of EMA 1 size
+    :param ema_two: interget of EMA 2 size
+    :return dataframe with cross event
+    """
+    ema_one_column = "ema_" + str(ema_one)
+    ema_two_column = "ema_" + str(ema_two)
+
+    dataframe['position'] = dataframe[ema_one_column] > dataframe[ema_two_column]
+    dataframe['pre_position'] = dataframe['position'].shift(1)
+    dataframe.dropna(inplace=True)
+    dataframe['ema_cross'] = np.where(dataframe['position'] == dataframe['pre_position'], False, True)
+    dataframe = dataframe.drop(columns="position")
+    dataframe = dataframe.drop(columns="pre_position")
+    return dataframe

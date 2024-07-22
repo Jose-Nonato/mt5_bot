@@ -1,6 +1,6 @@
 import json
 import os
-import mt5_lib, indicator_lib
+import mt5_lib, indicator_lib, ema_cross_strategy
 
 
 def get_project_settings(filepath):
@@ -38,12 +38,13 @@ if __name__ == "__main__":
     project_settings = get_project_settings("project_settings.json")
     start = start_up(project_settings)
     symbols = project_settings["mt5"]["symbols"]
+    timeframe = project_settings["mt5"]["timeframe"]
     for symbol in symbols:
         candlesticks = mt5_lib.get_candlesticks(
             symbol,
-            project_settings["mt5"]["timeframe"],
+            timeframe,
             1000
         )
-        print(candlesticks)
-    ema_50 = indicator_lib.calc_custom_ema(candlesticks, 50)
-    print(ema_50)
+    data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200)
+    ema_cross_signal = data[data["ema_cross"] == True]
+    print(ema_cross_signal)
