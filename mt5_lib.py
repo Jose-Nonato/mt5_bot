@@ -129,3 +129,73 @@ def set_query_timeframe(timeframe):
     else:
         print(f"Incorrect timeframe provided. {timeframe}")
         raise ValueError
+    
+
+def place_order(order_type, symbol, volume, stop_loss, take_profit, comment, stop_price, direct=False):
+    """
+    Function to place an order on MetaTrader5. Function checks the order first, then places trade if order check returns True.
+    :return Trade Outcome
+    """
+    volume = float(volume)
+    volume = round(volume, 2)
+    stop_loss = float(stop_loss)
+    stop_loss = round(stop_loss, 4)
+    take_profit = float(take_profit)
+    take_profit = round(take_profit, 4)
+    stop_price = float(stop_price)
+    stop_price = round(stop_price, 4)
+
+    requests = {
+        "symbol": symbol,
+        "volume": volume,
+        "sl": stop_loss,
+        "tp": take_profit,
+        "type_time": MetaTrader5.ORDER_TIME_GTC,
+        "comment": comment
+    }
+
+    if order_type == "SELL_STOP":
+        requests["type"] = MetaTrader5.ORDER_TYPE_SELL_LIMIT
+        requests["action"] = MetaTrader5.TRADE_ACTION_PENDING
+        requests["type_filling"] = MetaTrader5.ORDER_FILLING_RETURN
+        if stop_price <= 0:
+            raise ValueError("Stop price cannot be zero!")
+        else:
+            requests["price"] = stop_price
+    elif order_type == "BUY_STOP":
+        requests["type"] = MetaTrader5.ORDER_TYPE_BUY_STOP
+        requests["action"] = MetaTrader5.TRADE_ACTION_PENDING
+        requests["type_filling"] = MetaTrader5.ORDER_FILLING_RETURN
+        if stop_price <= 0:
+            raise ValueError("Stop price cannot be zero!")
+        else:
+            requests["price"] = stop_price
+    else:
+        raise ValueError(f"Unsupported order type {order_type} provided!")
+    
+    if direct:
+        order_result = MetaTrader5.order_send(requests)
+        if order_result[0] == 10009:
+            print(f"Order for {symbol} successful!")
+            return order_result[2]
+        elif order_result[0] == 10027:
+            print("Turn off AlgoTrading on MTS Terminal")
+            return Exception("Turn off Algo Trading on MT5 Terminal")
+        elif order_result[0] == 10015:
+            print(f"Invalid price for {symbol}")
+        elif order_result[0] == 10016:
+            print(f"Invalid stops for {symbol}. Stop loss: {stop_loss}")
+        elif order_result[0] == 10014:
+            print(f"Invalid volume for {symbol}. Volume: {volume}")
+        else:
+            print(f"Error loading order for {symbol}. Error code: {order_result[0]}. Order details: {order_result}")
+            return Exception(f"Unknown error loading order for {symbol}")
+    else:
+        result = MetaTrader5.order_check(requests)
+        if result[0] == 0:
+            print(f"Order check for {symbol} successfull. Placing order.")
+            place_order(order_type, symbol, volume, stop_price, stop_loss, take_profit, comment, direct=True)
+        elif result[0] == 10015:
+            print(f"Invalid price for {symbol}. Price: {stop_price}")
+        else:
+            print(f"Order check failed. Details: {result}")

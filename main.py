@@ -45,6 +45,5 @@ if __name__ == "__main__":
             timeframe,
             1000
         )
-    data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200)
-    ema_cross_signal = data[data["ema_cross"] == True]
-    print(ema_cross_signal)
+    data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200, 1000, 0.01)
+    print(data)
