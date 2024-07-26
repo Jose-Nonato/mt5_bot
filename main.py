@@ -1,5 +1,5 @@
 import json
-import os
+import os, time
 import mt5_lib, indicator_lib, ema_cross_strategy
 
 
@@ -34,16 +34,28 @@ def start_up(project_settings):
     return False
 
 
-if __name__ == "__main__":
-    project_settings = get_project_settings("project_settings.json")
-    start = start_up(project_settings)
+def run_strategy(project_setting):
     symbols = project_settings["mt5"]["symbols"]
     timeframe = project_settings["mt5"]["timeframe"]
     for symbol in symbols:
-        candlesticks = mt5_lib.get_candlesticks(
-            symbol,
-            timeframe,
-            1000
-        )
-    data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200, 1000, 0.01)
-    print(data)
+        candlesticks = mt5_lib.get_candlesticks(symbol, timeframe, 1000)
+        data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200, 1000, 0.01)
+    return True
+
+
+if __name__ == "__main__":
+    project_settings = get_project_settings("project_settings.json")
+    start = start_up(project_settings)
+
+    if start:
+        current_time = 0
+        previous_time = 0
+        timeframe = project_settings["mt5"]["timeframe"]
+        while 1:
+            time_candle = mt5_lib.get_candlesticks("BTCUSD.a", timeframe, 1)
+            current_time = time_candle["time"][0]
+            if current_time != previous_time:
+                previous_time = current_time
+                strategy = run_strategy(project_settings)
+    else:
+        time.sleep(1)
