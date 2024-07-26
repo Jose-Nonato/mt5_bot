@@ -37,6 +37,9 @@ def start_up(project_settings):
 def run_strategy(project_setting):
     symbols = project_settings["mt5"]["symbols"]
     timeframe = project_settings["mt5"]["timeframe"]
+    orders = mt5_lib.get_all_open_orders()
+    for order in orders:
+        mt5_lib.cancel_order(order)
     for symbol in symbols:
         candlesticks = mt5_lib.get_candlesticks(symbol, timeframe, 1000)
         data = ema_cross_strategy.ema_cross_strategy(symbol, timeframe, 50, 200, 1000, 0.01)

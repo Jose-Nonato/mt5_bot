@@ -199,3 +199,32 @@ def place_order(order_type, symbol, volume, stop_loss, take_profit, comment, sto
             print(f"Invalid price for {symbol}. Price: {stop_price}")
         else:
             print(f"Order check failed. Details: {result}")
+
+
+def cancel_order(order_number):
+    """
+    Function to cancel an order identified by an order number
+    """
+    request = {
+        "action": MetaTrader5.TRADE_ACTION_REMOVE,
+        "order": order_number,
+        "comment": "order removed"
+    }
+    try:
+        order_result = MetaTrader5.order_send(request)
+        if order_result[0] == 1009:
+            print(f"Order {order_number} sucessfully cancelled")
+            return True
+        else:
+            print(f"Order {order_number} unable to be cancelled")
+            return False
+    except Exception as e:
+        print(f"Error cancelling order {order_number}. Error: {e}")
+        raise Exception
+
+
+def get_all_open_orders():
+    """
+    Function to retrieve all open orders from MetaTrader 5
+    """
+    return MetaTrader5.orders.get()
