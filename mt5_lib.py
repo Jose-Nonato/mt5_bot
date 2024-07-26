@@ -227,4 +227,34 @@ def get_all_open_orders():
     """
     Function to retrieve all open orders from MetaTrader 5
     """
-    return MetaTrader5.orders.get()
+    return MetaTrader5.orders_get()
+
+
+def get_filtered_list_of_orders(symbol, comment):
+    """
+    Function to retrieve a filtered list of open orders from MT5
+    """
+    open_orders_by_symbols = MetaTrader5.orders_get(symbol)
+    if open_orders_by_symbols is None or len(open_orders_by_symbols) == 0:
+        return []
+    open_orders_dataframe = pd.DataFrame(list(open_orders_by_symbols), columns=open_orders_by_symbols[0]._asdict().keys())
+    open_orders_dataframe = open_orders_dataframe[open_orders_dataframe["comment"] == comment]
+    open_orders = []
+    for order in open_orders_dataframe["ticket"]:
+        open_orders.append(order)
+    return open_orders
+
+
+def cancel_filtered_orders(symbol, comment):
+    """
+    Function to cancel a list of orders. Based upon two filters
+    """
+    orders = get_filtered_list_of_orders(symbol, comment)
+    if len(orders) > 0:
+        for order in orders:
+            cancel_outcome = cancel_order(order)
+            if cancel_outcome is not True:
+                return False
+        return True
+    else:
+        return True
